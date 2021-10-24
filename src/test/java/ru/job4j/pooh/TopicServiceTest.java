@@ -60,4 +60,14 @@ public class TopicServiceTest {
         );
         assertThat(rsl.text(), is("temperature=30"));
     }
+
+    @Test
+    public void whenTest() {
+        TopicService topicService = new TopicService();
+        String paramForSubscriber2 = "client6565";
+        Resp result2 = topicService.process(
+                new Req("GET", "topic", "weather", paramForSubscriber2)
+        );
+        assertThat(result2.text(), is(""));
+    }
 }

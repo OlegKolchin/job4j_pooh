@@ -21,7 +21,7 @@ public class TopicService implements Service {
 
     private Resp postProcess(Req req) {
         String topic = req.getSourceName();
-        if (map.putIfAbsent(topic, new ConcurrentHashMap<>()) != null) {
+        if (map.get(topic) != null) {
             for (ConcurrentLinkedQueue<String> queue : map.get(topic).values()) {
                 queue.offer(req.getParam());
             }
@@ -33,17 +33,10 @@ public class TopicService implements Service {
     private Resp getProcess(Req req) {
         String topic = req.getSourceName();
         String param = req.getParam();
-        if (map.get(topic) != null) {
-            ConcurrentLinkedQueue<String> queue = map.get(topic).get(param);
-            if (queue != null) {
-                return new Resp(queue.poll(), "200");
-            } else {
-                map.get(topic).putIfAbsent(param, new ConcurrentLinkedQueue<>());
-                return new Resp("", "200");
-            }
-        }
         map.putIfAbsent(topic, new ConcurrentHashMap<>());
         map.get(topic).putIfAbsent(param, new ConcurrentLinkedQueue<>());
-        return new Resp("", "200");
+        return map.get(topic).get(param).isEmpty()
+                ? new Resp("", "200")
+                        : new Resp(map.get(topic).get(param).poll(), "200");
     }
 }
